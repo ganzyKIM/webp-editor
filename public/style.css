@@ -357,7 +357,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
 .mascot-bubble{
   position:absolute; bottom:calc(100% + 12px); left:50%;
   transform:translateX(-50%);
-  width:220px;
+  width:max-content; max-width:230px;
   background:#fff; color:var(--ink);
   border:2px solid var(--magenta); border-radius:14px;
   padding:9px 13px; font-size:12px; line-height:1.45; text-align:center;
