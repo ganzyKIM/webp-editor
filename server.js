@@ -1,5 +1,10 @@
 'use strict';
 
+// 로컬 개발 시 .env 로드 (Vercel에서는 대시보드 환경변수가 자동 주입됨)
+if (process.env.NODE_ENV !== 'production') {
+  try { require('dotenv').config(); } catch { /* dotenv 없어도 무시 */ }
+}
+
 const path    = require('path');
 const crypto  = require('crypto');
 const express = require('express');
