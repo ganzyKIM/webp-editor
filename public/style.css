@@ -415,21 +415,14 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
    ════════════════════════════════════════════════════════════════════ */
 
 /* 다크모드 전환 트랜지션
-   · background는 CSS 변수 경유 시 transition이 브라우저에서 불안정 → 제거
-   · 어차피 변신 플래시(fx-flash)가 배경 전환 순간을 완전히 가려줌
-   · color/border/shadow는 부드럽게 */
-body,
-.window, .titlebar, .menubar, .statusbar,
-.panel, .ctl-group, .tab, .result-card,
-.console, .console-title, .console-wrap,
-.stage, .btn, .seg-btn, .mascot-fallback,
-.mascot-bubble, .mascot-transform {
-  transition:
-    color          0.55s ease,
-    border-color   0.55s ease,
-    box-shadow     0.65s ease,
-    text-shadow    0.55s ease,
-    filter         0.65s ease;
+   · CSS 변수를 경유하는 background/color/border-color는 transition 미지원 (브라우저 제한)
+   · 변신 플래시(fx-flash)가 순간 전환을 자연스럽게 커버
+   · box-shadow/filter만 유지 (직접 값 → 정상 동작) */
+body.mode-ame .window,
+body.mode-ame .panel,
+body.mode-ame .ctl-group,
+body.mode-ame .result-card {
+  transition: box-shadow 0.6s ease, filter 0.5s ease;
 }
 
 /* ── 팔레트 재정의 ── */
@@ -438,13 +431,13 @@ body.mode-ame {
   --pink-1:   #1e1228;
   --pink-2:   #251630;
   --pink-3:   #2e1a38;
-  --magenta:  #7a2d60;
-  --magenta-d:#4a1538;
+  --magenta:  #d080b8;
+  --magenta-d:#d080b8;  /* 라이트모드의 어두운 보조색 → 다크모드에서는 밝게 */
   --lav-1:    #1e1530;
   --lav-2:    #2a1e3e;
   --mint:     #0f1e28;
-  --ink:      #c4a8d4;
-  --ink-soft: #6a4a7a;
+  --ink:      #ecd8f8;
+  --ink-soft: #c0a0d8;
   --bevel-lt: #3a2050;
   --bevel-dk: #08030c;
   --bevel-dk2:#060209;
@@ -452,18 +445,58 @@ body.mode-ame {
   --win-bg:   #180c22;
 }
 
-/* CSS variable → transition은 브라우저 지원이 불안정하므로 직접 재정의 */
-body.mode-ame .window       { background: #180c22; color: #c4a8d4; }
-body.mode-ame .panel        { background: #160d1e; }
-body.mode-ame .ctl-group    { background: #1e1228; }
-body.mode-ame .menubar      { background: #160d20; }
-body.mode-ame .statusbar    { background: #160d20; }
-body.mode-ame .tab          { background: #201230; color: #c4a8d4; }
-body.mode-ame .tab.active   { background: linear-gradient(#251630, #1e1228); }
-body.mode-ame .btn          { background: linear-gradient(#1e1228, #251630); color: #c4a8d4; }
-body.mode-ame .btn:hover    { background: linear-gradient(#251630, #2e1a38); }
-body.mode-ame .seg-btn      { background: #201230; color: #c4a8d4; }
-body.mode-ame .num          { background: #120810; color: #c4a8d4; }
+/* ── CSS variable→transition 브라우저 제한으로 직접 재정의 (배경) ── */
+body.mode-ame .window    { background: #180c22; }
+body.mode-ame .panel     { background: #160d1e; }
+body.mode-ame .ctl-group { background: #1e1228; }
+body.mode-ame .menubar   { background: #160d20; }
+body.mode-ame .statusbar { background: #160d20; }
+body.mode-ame .tab       { background: #201230; }
+body.mode-ame .tab.active{ background: linear-gradient(#251630, #1e1228); }
+body.mode-ame .btn       { background: linear-gradient(#1e1228, #251630); }
+body.mode-ame .btn:hover { background: linear-gradient(#251630, #2e1a38); }
+body.mode-ame .seg-btn   { background: #201230; }
+body.mode-ame .num       { background: #120810; }
+
+/* ── 텍스트 가독성 — 직접 재정의 (CSS variable 상속이 불안정) ── */
+/* 기본 글자: 밝은 라벤더 */
+body.mode-ame .window,
+body.mode-ame .panel,
+body.mode-ame .ctl-group,
+body.mode-ame .menubar,
+body.mode-ame .statusbar  { color: #ecd8f8; }
+
+/* 라벨 */
+body.mode-ame .ctl-label  { color: #ecd8f8; }
+body.mode-ame .ctl-label b{ color: #e090c8; }  /* 강조 수치: 밝은 핑크-마젠타 */
+
+/* 보조 텍스트 (힌트, 설명, 단위) */
+body.mode-ame .mini,
+body.mode-ame .note,
+body.mode-ame .range-ticks,
+body.mode-ame .ci-hint,
+body.mode-ame .empty-text  { color: #c0a0d8; }
+body.mode-ame .empty-sub   { color: #a080b8; }
+body.mode-ame .empty-emoji { color: #d080b8; }
+
+/* 메뉴바 힌트 / 파일명 / 크기 표시 */
+body.mode-ame .menu-hint  { color: #d080b8; }
+body.mode-ame .filename   { color: #c0a0d8; }
+body.mode-ame .dims       { color: #d080b8; }
+
+/* 탭 / 버튼 / 세그먼트 */
+body.mode-ame .tab        { color: #ecd8f8; }
+body.mode-ame .tab.active { color: #f8e8ff; }
+body.mode-ame .btn        { color: #ecd8f8; }
+body.mode-ame .seg-btn    { color: #c8a8e0; }
+body.mode-ame .seg-btn.active { color: #fff; }
+body.mode-ame .num        { color: #ecd8f8; }
+body.mode-ame .check      { color: #ecd8f8; }
+
+/* 상태바 */
+body.mode-ame .statusbar  { color: #9070a8; }
+
+/* 패널 타이틀은 이미 그라디언트 + 흰 텍스트 → 유지 */
 
 /* ── 배경 ── */
 body.mode-ame {
