@@ -7,11 +7,13 @@ if (process.env.NODE_ENV !== 'production') {
 
 const path    = require('path');
 const crypto  = require('crypto');
+const fs      = require('fs');
 const express = require('express');
 const multer  = require('multer');
 const os      = require('os');
 const storage = require('./lib/storage');
 const webp    = require('./lib/webp');
+const video   = require('./lib/video');
 
 const app  = express();
 const PORT = process.env.PORT || 3939;
@@ -79,9 +81,85 @@ app.post('/api/export', express.json({ limit: '1mb' }), async (req, res) => {
   }
 });
 
-function safeToken(t) {
-  return t && /^[a-f0-9]{20}\.webp$/.test(t);
-}
+function safeToken(t)      { return t && /^[a-f0-9]{20}\.webp$/.test(t); }
+function safeVideoToken(t) { return t && /^[a-f0-9]{20}\.vid$/.test(t);  }
+
+// ── 영상 업로드: 서명 URL 발급 ─────────────────────────────────────────────
+app.get('/api/video-upload-url', async (req, res) => {
+  try {
+    const token = crypto.randomBytes(10).toString('hex') + '.vid';
+    if (storage.USE_SUPABASE) {
+      const { signedUrl, uploadToken } = await storage.createSignedUploadUrl(token);
+      res.json({ token, signedUrl, uploadToken });
+    } else {
+      // 로컬 개발: 직접 POST 업로드 사용
+      res.json({ token, signedUrl: null, uploadToken: null });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── 영상 업로드: 로컬 폴백 (서명 URL 없을 때) ────────────────────────────
+const videoUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
+app.post('/api/upload-video', videoUpload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '파일이 없어요' });
+  try {
+    const token = crypto.randomBytes(10).toString('hex') + '.vid';
+    await storage.put(token, req.file.buffer);
+    const tmp = path.join(os.tmpdir(), 'vi-' + token);
+    fs.writeFileSync(tmp, req.file.buffer);
+    const meta = await video.inspect(tmp).finally(() => fs.rm(tmp, { force: true }, () => {}));
+    res.json({ token, meta });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// ── 영상 메타데이터 읽기 ──────────────────────────────────────────────────
+app.post('/api/video-inspect', express.json({ limit: '1mb' }), async (req, res) => {
+  const { token } = req.body || {};
+  if (!safeVideoToken(token)) return res.status(400).json({ error: '잘못된 토큰이에요' });
+  let tmp;
+  try {
+    const buf = await storage.get(token);
+    tmp = path.join(os.tmpdir(), 'vi-' + token);
+    fs.writeFileSync(tmp, buf);
+    const meta = await video.inspect(tmp);
+    res.json({ meta });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  } finally {
+    if (tmp) fs.rm(tmp, { force: true }, () => {});
+  }
+});
+
+// ── 영상 변환 (SSE 스트리밍) ──────────────────────────────────────────────
+app.post('/api/convert-video', express.json({ limit: '1mb' }), async (req, res) => {
+  const { token, options } = req.body || {};
+  if (!safeVideoToken(token)) return res.status(400).json({ error: '잘못된 토큰이에요' });
+
+  res.set({
+    'Content-Type':  'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection:      'keep-alive',
+  });
+  const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+
+  let tmp;
+  try {
+    const buf = await storage.get(token);
+    tmp = path.join(os.tmpdir(), 'vc-' + token);
+    fs.writeFileSync(tmp, buf);
+    const { buffer, info } = await video.convert(tmp, options || {}, chunk => send('log', chunk));
+    send('done', { info, webp: buffer.toString('base64') });
+  } catch (e) {
+    send('error', { message: e.message });
+  } finally {
+    if (tmp) fs.rm(tmp, { force: true }, () => {});
+    res.end();
+  }
+});
 
 // ── 로컬 개발 전용 ────────────────────────────────────────────────────────────
 storage.startLocalCleanup();

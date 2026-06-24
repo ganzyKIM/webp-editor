@@ -23,129 +23,235 @@
     <!-- ── 메뉴/탭 ───────────────────────────────────────── -->
     <div class="menubar">
       <button class="tab active" data-tab="edit">★ 움짤 편집</button>
-      <button class="tab tab-soon" data-tab="convert" title="아직 준비 중이에요">☂ 영상→움짤 <small>(예정)</small></button>
+      <button class="tab" data-tab="convert">🎬 영상→움짤</button>
       <span class="menu-spacer"></span>
-      <span class="menu-hint">♡ drag 해서 크롭 영역을 그려보아요 ♡</span>
+      <span class="menu-hint" id="menuHint">♡ drag 해서 크롭 영역을 그려보아요 ♡</span>
     </div>
 
-    <!-- ── 본문 ──────────────────────────────────────────── -->
-    <div class="body">
+    <!-- ════════════════════════════════════════════════════
+         탭 1: 움짤 편집
+    ════════════════════════════════════════════════════ -->
+    <div id="paneEdit">
+      <div class="body">
 
-      <!-- 왼쪽: 프리뷰 -->
-      <section class="panel preview-panel">
-        <div class="panel-title">◆ 미리보기 <span class="filename" id="filename">— 파일 없음 —</span></div>
+        <!-- 왼쪽: 프리뷰 -->
+        <section class="panel preview-panel">
+          <div class="panel-title">◆ 미리보기 <span class="filename" id="filename">— 파일 없음 —</span></div>
 
-        <div class="stage-wrap">
-          <div class="stage" id="stage">
-            <div class="empty-state" id="emptyState">
-              <div class="empty-emoji">(｡•́︿•̀｡)</div>
-              <div class="empty-text">움짤(.webp)을 올려주세요</div>
-              <div class="empty-sub">여기로 끌어다 놓거나 ↓ 버튼</div>
-            </div>
-            <img id="preview" class="preview-img" alt="" hidden />
-            <div id="cropLayer" class="crop-layer" hidden>
-              <div id="cropBox" class="crop-box" hidden>
-                <span id="cropDimLabel" class="crop-dim-label"></span>
-                <span class="handle nw"></span><span class="handle ne"></span>
-                <span class="handle sw"></span><span class="handle se"></span>
+          <div class="stage-wrap">
+            <div class="stage" id="stage">
+              <div class="empty-state" id="emptyState">
+                <div class="empty-emoji">(｡•́︿•̀｡)</div>
+                <div class="empty-text">움짤(.webp)을 올려주세요</div>
+                <div class="empty-sub">여기로 끌어다 놓거나 ↓ 버튼</div>
+              </div>
+              <img id="preview" class="preview-img" alt="" hidden />
+              <div id="cropLayer" class="crop-layer" hidden>
+                <div id="cropBox" class="crop-box" hidden>
+                  <span id="cropDimLabel" class="crop-dim-label"></span>
+                  <span class="handle nw"></span><span class="handle ne"></span>
+                  <span class="handle sw"></span><span class="handle se"></span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="stage-toolbar">
-          <button class="btn btn-load" id="loadBtn">📂 Load 움짤 [열기]</button>
-          <button class="btn" id="cropToggle" disabled>✂ 크롭 모드</button>
-          <button class="btn" id="cropReset" disabled>↺ 크롭 해제</button>
-          <span class="dims" id="dimsLabel"></span>
-          <input type="file" id="fileInput" accept="image/webp,.webp,image/gif,.gif" hidden />
-        </div>
-      </section>
+          <div class="stage-toolbar">
+            <button class="btn btn-load" id="loadBtn">📂 Load 움짤 [열기]</button>
+            <button class="btn" id="cropToggle" disabled>✂ 크롭 모드</button>
+            <button class="btn" id="cropReset" disabled>↺ 크롭 해제</button>
+            <span class="dims" id="dimsLabel"></span>
+            <input type="file" id="fileInput" accept="image/webp,.webp,image/gif,.gif" hidden />
+          </div>
+        </section>
 
-      <!-- 오른쪽: 컨트롤 -->
-      <section class="panel control-panel">
-        <div class="panel-title">◆ 편집 옵션</div>
+        <!-- 오른쪽: 컨트롤 -->
+        <section class="panel control-panel">
+          <div class="panel-title">◆ 편집 옵션</div>
 
-        <!-- 화질 -->
-        <div class="ctl-group">
-          <label class="ctl-label">화질 (quality) <b id="qualVal">75</b></label>
-          <input type="range" id="quality" min="1" max="100" value="75" />
-          <div class="range-ticks"><span>거칠게</span><span>곱게</span></div>
-        </div>
+          <!-- 화질 -->
+          <div class="ctl-group">
+            <label class="ctl-label">화질 (quality) <b id="qualVal">75</b></label>
+            <input type="range" id="quality" min="1" max="100" value="75" />
+            <div class="range-ticks"><span>거칠게</span><span>곱게</span></div>
+          </div>
 
-        <label class="check"><input type="checkbox" id="lossless" /> 무손실(lossless) — 용량↑ 화질최상</label>
+          <label class="check"><input type="checkbox" id="lossless" /> 무손실(lossless) — 용량↑ 화질최상</label>
 
-        <!-- 해상도 -->
-        <div class="ctl-group">
-          <label class="ctl-label">해상도 (크기 조절)</label>
-          <div class="row">
-            <div class="seg" id="scaleSeg">
-              <button class="seg-btn active" data-pct="100">100%</button>
-              <button class="seg-btn" data-pct="75">75%</button>
-              <button class="seg-btn" data-pct="50">50%</button>
-              <button class="seg-btn" data-pct="25">25%</button>
+          <!-- 해상도 -->
+          <div class="ctl-group">
+            <label class="ctl-label">해상도 (크기 조절)</label>
+            <div class="row">
+              <div class="seg" id="scaleSeg">
+                <button class="seg-btn active" data-pct="100">100%</button>
+                <button class="seg-btn" data-pct="75">75%</button>
+                <button class="seg-btn" data-pct="50">50%</button>
+                <button class="seg-btn" data-pct="25">25%</button>
+              </div>
+            </div>
+            <div class="row row-w">
+              <span class="mini">폭(px)</span>
+              <input type="number" id="targetW" class="num" min="1" max="4096" placeholder="auto" />
+              <span class="mini" id="autoH">× auto</span>
             </div>
           </div>
-          <div class="row row-w">
-            <span class="mini">폭(px)</span>
-            <input type="number" id="targetW" class="num" min="1" max="4096" placeholder="auto" />
-            <span class="mini" id="autoH">× auto</span>
-          </div>
-        </div>
 
-        <!-- 크롭 좌표 -->
-        <div class="ctl-group" id="cropInputGroup">
-          <label class="ctl-label">✂ 크롭 좌표 (픽셀 입력)</label>
-          <div class="crop-inputs">
-            <div class="crop-input-row">
-              <span class="ci-label">X 시작</span>
-              <input type="number" id="cropX" class="num ci-num" min="0" value="0" disabled />
-              <span class="ci-label">Y 시작</span>
-              <input type="number" id="cropY" class="num ci-num" min="0" value="0" disabled />
+          <!-- 크롭 좌표 -->
+          <div class="ctl-group" id="cropInputGroup">
+            <label class="ctl-label">✂ 크롭 좌표 (픽셀 입력)</label>
+            <div class="crop-inputs">
+              <div class="crop-input-row">
+                <span class="ci-label">X 시작</span>
+                <input type="number" id="cropX" class="num ci-num" min="0" value="0" disabled />
+                <span class="ci-label">Y 시작</span>
+                <input type="number" id="cropY" class="num ci-num" min="0" value="0" disabled />
+              </div>
+              <div class="crop-input-row">
+                <span class="ci-label">폭 W</span>
+                <input type="number" id="cropW" class="num ci-num" min="1" value="" disabled />
+                <span class="ci-label">높이 H</span>
+                <input type="number" id="cropH" class="num ci-num" min="1" value="" disabled />
+              </div>
             </div>
-            <div class="crop-input-row">
-              <span class="ci-label">폭 W</span>
-              <input type="number" id="cropW" class="num ci-num" min="1" value="" disabled />
-              <span class="ci-label">높이 H</span>
-              <input type="number" id="cropH" class="num ci-num" min="1" value="" disabled />
-            </div>
-          </div>
-          <div class="crop-input-actions">
-            <button class="btn btn-xs" id="cropApply" disabled>✔ 적용</button>
-            <button class="btn btn-xs" id="cropFull" disabled>⛶ 전체</button>
-            <span class="ci-hint" id="cropPxHint">— 원본 px 기준 —</span>
-          </div>
-        </div>
-
-        <!-- 프레임 -->
-        <div class="ctl-group">
-          <label class="ctl-label">프레임 속도 (fps) <b id="fpsVal">—</b></label>
-          <div class="row row-w">
-            <input type="range" id="fps" min="1" max="50" value="15" disabled />
-            <button class="btn btn-xs" id="fpsAuto">자동</button>
-          </div>
-          <small class="note">※ 원본 타이밍을 유지하려면 '자동'</small>
-        </div>
-
-        <hr class="divider" />
-
-        <button class="btn btn-export" id="exportBtn" disabled>💾 변환 &amp; 저장 (Export)</button>
-        <a id="downloadLink" class="btn btn-download" hidden download>⬇ 결과 내려받기</a>
-
-        <!-- 결과 요약 -->
-        <div class="result-card" id="resultCard" hidden>
-          <div class="rc-title">◆ 결과 <span class="heart">♥</span></div>
-          <div class="rc-body">
-            <img id="resultThumb" class="result-thumb" alt="결과 미리보기" />
-            <div class="rc-grid">
-              <span>크기</span><b id="rOut">—</b>
-              <span>프레임</span><b id="rFrames">—</b>
-              <span>용량</span><b id="rSize">—</b>
-              <span>원본대비</span><b id="rRatio">—</b>
+            <div class="crop-input-actions">
+              <button class="btn btn-xs" id="cropApply" disabled>✔ 적용</button>
+              <button class="btn btn-xs" id="cropFull" disabled>⛶ 전체</button>
+              <span class="ci-hint" id="cropPxHint">— 원본 px 기준 —</span>
             </div>
           </div>
-        </div>
-      </section>
+
+          <!-- 프레임 -->
+          <div class="ctl-group">
+            <label class="ctl-label">프레임 속도 (fps) <b id="fpsVal">—</b></label>
+            <div class="row row-w">
+              <input type="range" id="fps" min="1" max="50" value="15" disabled />
+              <button class="btn btn-xs" id="fpsAuto">자동</button>
+            </div>
+            <small class="note">※ 원본 타이밍을 유지하려면 '자동'</small>
+          </div>
+
+          <hr class="divider" />
+
+          <button class="btn btn-export" id="exportBtn" disabled>💾 변환 &amp; 저장 (Export)</button>
+          <a id="downloadLink" class="btn btn-download" hidden download>⬇ 결과 내려받기</a>
+
+          <!-- 결과 요약 -->
+          <div class="result-card" id="resultCard" hidden>
+            <div class="rc-title">◆ 결과 <span class="heart">♥</span></div>
+            <div class="rc-body">
+              <img id="resultThumb" class="result-thumb" alt="결과 미리보기" />
+              <div class="rc-grid">
+                <span>크기</span><b id="rOut">—</b>
+                <span>프레임</span><b id="rFrames">—</b>
+                <span>용량</span><b id="rSize">—</b>
+                <span>원본대비</span><b id="rRatio">—</b>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         탭 2: 영상→움짤 변환
+    ════════════════════════════════════════════════════ -->
+    <div id="paneConvert" hidden>
+      <div class="body">
+
+        <!-- 왼쪽: 영상 프리뷰 -->
+        <section class="panel preview-panel">
+          <div class="panel-title">◆ 영상 미리보기 <span class="filename" id="cvFilename">— 파일 없음 —</span></div>
+
+          <div class="stage-wrap">
+            <div class="stage" id="cvStage">
+              <div class="empty-state" id="cvEmpty">
+                <div class="empty-emoji">🎬</div>
+                <div class="empty-text">영상 파일을 올려주세요</div>
+                <div class="empty-sub">mp4 · webm · mov · 여기로 끌어다 놓기</div>
+              </div>
+              <video id="cvPreview" class="cv-preview" hidden muted playsinline controls></video>
+            </div>
+          </div>
+
+          <div class="stage-toolbar">
+            <button class="btn btn-load" id="cvLoadBtn">📂 영상 열기</button>
+            <span class="dims" id="cvDimsLabel"></span>
+            <input type="file" id="cvFileInput" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" hidden />
+          </div>
+        </section>
+
+        <!-- 오른쪽: 변환 컨트롤 -->
+        <section class="panel control-panel">
+          <div class="panel-title">◆ 변환 설정</div>
+
+          <!-- 구간 -->
+          <div class="ctl-group">
+            <label class="ctl-label">✂ 구간 (초)</label>
+            <div class="row">
+              <span class="mini">시작</span>
+              <input type="number" id="cvStart" class="num" min="0" step="0.1" value="0" disabled style="width:72px" />
+              <span class="mini">끝</span>
+              <input type="number" id="cvEnd" class="num" min="0" step="0.1" value="0" disabled style="width:72px" />
+              <span class="mini" id="cvDurHint">—</span>
+            </div>
+          </div>
+
+          <!-- FPS -->
+          <div class="ctl-group">
+            <label class="ctl-label">프레임 속도 <b id="cvFpsVal">15</b> fps</label>
+            <div class="seg" id="cvFpsSeg">
+              <button class="seg-btn" data-fps="8">8</button>
+              <button class="seg-btn" data-fps="10">10</button>
+              <button class="seg-btn active" data-fps="15">15</button>
+              <button class="seg-btn" data-fps="24">24</button>
+            </div>
+            <small class="note">※ 움짤은 8~15fps 추천 (용량↓)</small>
+          </div>
+
+          <!-- 해상도 -->
+          <div class="ctl-group">
+            <label class="ctl-label">해상도 (폭 px)</label>
+            <div class="seg" id="cvWidthSeg">
+              <button class="seg-btn" data-w="320">320</button>
+              <button class="seg-btn active" data-w="480">480</button>
+              <button class="seg-btn" data-w="640">640</button>
+              <button class="seg-btn" data-w="0">원본</button>
+            </div>
+          </div>
+
+          <!-- 화질 -->
+          <div class="ctl-group">
+            <label class="ctl-label">화질 (quality) <b id="cvQualVal">75</b></label>
+            <input type="range" id="cvQuality" min="1" max="100" value="75" />
+            <div class="range-ticks"><span>거칠게</span><span>곱게</span></div>
+          </div>
+
+          <label class="check"><input type="checkbox" id="cvLossless" /> 무손실(lossless) — 용량↑ 화질최상</label>
+
+          <hr class="divider" />
+
+          <!-- 예상 프레임 수 표시 -->
+          <div class="cv-estimate" id="cvEstimate" hidden>
+            예상 프레임: <b id="cvEstFrames">—</b> · 예상 길이: <b id="cvEstDur">—</b>s
+          </div>
+
+          <button class="btn btn-export" id="cvExportBtn" disabled>🎬 WebP 움짤로 변환</button>
+          <a id="cvDownloadLink" class="btn btn-download" hidden download>⬇ 결과 내려받기</a>
+
+          <!-- 결과 카드 -->
+          <div class="result-card" id="cvResultCard" hidden>
+            <div class="rc-title">◆ 결과 <span class="heart">♥</span></div>
+            <div class="rc-body">
+              <img id="cvResultThumb" class="result-thumb" alt="" />
+              <div class="rc-grid">
+                <span>크기</span><b id="cvROut">—</b>
+                <span>프레임</span><b id="cvRFrames">—</b>
+                <span>용량</span><b id="cvRSize">—</b>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
 
     <!-- ── 콘솔 ──────────────────────────────────────────── -->
@@ -157,21 +263,7 @@
 
     <div class="statusbar">
       <span id="status">준비됨 ♡</span>
-      <span class="status-right">sharp + ffmpeg · localhost:3939</span>
-    </div>
-  </div>
-
-  <!-- 영상→움짤 (예정) 모달 -->
-  <div class="modal" id="soonModal" hidden>
-    <div class="window modal-win">
-      <div class="titlebar"><span class="title-text">☂ 영상 → 움짤 변환</span>
-        <div class="title-btns"><button class="tbtn tbtn-x" id="soonClose">✕</button></div></div>
-      <div class="modal-body">
-        <div class="empty-emoji">૮₍ ˶•⤙•˶ ₎ა</div>
-        <p>이 기능은 아직 <b>구상 단계</b>예요!</p>
-        <p class="soon-list">계획: mp4/webm/mov 업로드 → 구간 선택 → 프레임수·fps·화질 조절 → 움짤(.webp)로 변환</p>
-        <button class="btn" id="soonOk">알겠어요 ♡</button>
-      </div>
+      <span class="status-right">sharp + ffmpeg · webp-editor</span>
     </div>
   </div>
 </div>

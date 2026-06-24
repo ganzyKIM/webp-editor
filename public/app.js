@@ -410,10 +410,209 @@ async function readSSE(stream, cb) {
   }
 }
 
-/* ════════ 영상→움짤 예정 / 장난 버튼 ════════ */
-document.querySelector('[data-tab="convert"]').addEventListener('click', () => $('#soonModal').hidden = false);
-$('#soonClose').addEventListener('click', () => $('#soonModal').hidden = true);
-$('#soonOk').addEventListener('click',   () => $('#soonModal').hidden = true);
+/* ════════ 탭 전환 ════════ */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+    $('#paneEdit').hidden    = target !== 'edit';
+    $('#paneConvert').hidden = target !== 'convert';
+    $('#menuHint').textContent = target === 'convert'
+      ? '♡ mp4 · webm · mov 영상을 WebP 움짤로 변환해요 ♡'
+      : '♡ drag 해서 크롭 영역을 그려보아요 ♡';
+  });
+});
+
+/* ════════ 영상→움짤 탭 ════════ */
+const cvState = { token: null, meta: null, uploading: false };
+
+const cvStage    = $('#cvStage');
+const cvPreview  = $('#cvPreview');
+const cvEmpty    = $('#cvEmpty');
+const cvFileInput = $('#cvFileInput');
+
+$('#cvLoadBtn').addEventListener('click', () => cvFileInput.click());
+cvFileInput.addEventListener('change', e => { if (e.target.files[0]) cvHandleFile(e.target.files[0]); });
+
+['dragenter','dragover'].forEach(ev =>
+  cvStage.addEventListener(ev, e => { e.preventDefault(); cvStage.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev =>
+  cvStage.addEventListener(ev, e => { e.preventDefault(); cvStage.classList.remove('dragover'); }));
+cvStage.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0];
+  if (f) cvHandleFile(f);
+});
+
+async function cvHandleFile(file) {
+  if (!/\.(mp4|webm|mov)$/i.test(file.name) && !/^video\//i.test(file.type)) {
+    log(`\n✘ ${file.name} : mp4/webm/mov 파일만 올려주세요\n`); return;
+  }
+  if (cvState.uploading) return;
+  cvState.uploading = true;
+
+  // 로컬 미리보기 즉시 표시
+  cvPreview.src = URL.createObjectURL(file);
+  cvPreview.hidden = false;
+  cvEmpty.hidden = true;
+  $('#cvFilename').textContent = file.name;
+  setStatus('업로드 중...');
+  log(`\n> "${file.name}" 업로드 중... (${fmtBytes(file.size)})\n`);
+
+  try {
+    const urlRes = await fetch('/api/video-upload-url').then(r => r.json());
+    if (urlRes.error) throw new Error(urlRes.error);
+
+    if (urlRes.signedUrl) {
+      // Supabase 직접 업로드 (Vercel 4.5MB 제한 우회)
+      log(`> Supabase에 직접 업로드 중...\n`);
+      const putRes = await fetch(urlRes.signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type || 'video/mp4',
+          ...(urlRes.uploadToken ? { 'Authorization': 'Bearer ' + urlRes.uploadToken } : {}),
+        },
+      });
+      if (!putRes.ok) throw new Error('Supabase 업로드 실패 (' + putRes.status + ')');
+
+      // 메타데이터 조회
+      const inspRes = await fetch('/api/video-inspect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: urlRes.token }),
+      }).then(r => r.json());
+      if (inspRes.error) throw new Error(inspRes.error);
+
+      cvState.token = urlRes.token;
+      cvState.meta  = inspRes.meta;
+    } else {
+      // 로컬 폴백: 멀티파트 POST
+      log(`> 로컬 서버에 업로드 중...\n`);
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('token', urlRes.token);
+      const upRes = await fetch('/api/upload-video', { method: 'POST', body: fd }).then(r => r.json());
+      if (upRes.error) throw new Error(upRes.error);
+      cvState.token = upRes.token;
+      cvState.meta  = upRes.meta;
+    }
+
+    cvOnLoaded();
+  } catch (err) {
+    log(`✘ ${err.message}\n`);
+    setStatus('업로드 실패');
+  } finally {
+    cvState.uploading = false;
+  }
+}
+
+function cvOnLoaded() {
+  const m = cvState.meta;
+  log(`✔ 영상 로드 완료 — ${m.width}×${m.height}, ${m.fps}fps, ${m.duration.toFixed(1)}s\n`);
+
+  $('#cvStart').value = '0';
+  $('#cvEnd').value   = m.duration.toFixed(1);
+  $('#cvStart').disabled = false;
+  $('#cvEnd').disabled   = false;
+  $('#cvDimsLabel').textContent = `${m.width}×${m.height} · ${m.duration.toFixed(1)}s · ${m.fps}fps`;
+  $('#cvExportBtn').disabled = false;
+  cvUpdateEstimate();
+  setStatus(`준비됨 — ${$('#cvFilename').textContent} ♡`);
+}
+
+// fps 세그먼트
+let cvFps = 15, cvWidth = 480;
+document.querySelectorAll('#cvFpsSeg .seg-btn').forEach(b =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#cvFpsSeg .seg-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    cvFps = parseInt(b.dataset.fps, 10);
+    $('#cvFpsVal').textContent = cvFps;
+    cvUpdateEstimate();
+  }));
+
+document.querySelectorAll('#cvWidthSeg .seg-btn').forEach(b =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#cvWidthSeg .seg-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    cvWidth = parseInt(b.dataset.w, 10);
+    cvUpdateEstimate();
+  }));
+
+$('#cvQuality').addEventListener('input', e => $('#cvQualVal').textContent = e.target.value);
+$('#cvStart').addEventListener('input', cvUpdateEstimate);
+$('#cvEnd').addEventListener('input', cvUpdateEstimate);
+
+function cvUpdateEstimate() {
+  if (!cvState.meta) return;
+  const start = parseFloat($('#cvStart').value) || 0;
+  const end   = parseFloat($('#cvEnd').value) || cvState.meta.duration;
+  const dur   = Math.min(Math.max(end - start, 0), 30);
+  const frames = Math.round(dur * cvFps);
+  const el = $('#cvEstimate');
+  el.hidden = false;
+  $('#cvEstFrames').textContent = frames;
+  $('#cvEstDur').textContent    = dur.toFixed(1);
+  $('#cvDurHint').textContent   = `(${dur.toFixed(1)}s)`;
+  if (frames > 300) {
+    el.style.color = '#c04000';
+    $('#cvEstFrames').textContent = frames + ' ⚠ 많아요';
+  } else {
+    el.style.color = '';
+  }
+}
+
+$('#cvExportBtn').addEventListener('click', cvDoConvert);
+
+async function cvDoConvert() {
+  if (!cvState.token) return;
+  const btn = $('#cvExportBtn');
+  btn.disabled = true; btn.textContent = '⏳ 변환 중...';
+  $('#cvDownloadLink').hidden = true;
+  $('#cvResultCard').hidden = true;
+  setStatus('변환 중... ♨');
+
+  const options = {
+    start:    parseFloat($('#cvStart').value) || 0,
+    end:      parseFloat($('#cvEnd').value) || undefined,
+    fps:      cvFps,
+    width:    cvWidth || undefined,
+    quality:  +$('#cvQuality').value,
+    lossless: $('#cvLossless').checked,
+  };
+
+  log(`\n──────── VIDEO CONVERT ────────\n`);
+  try {
+    const r = await fetch('/api/convert-video', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: cvState.token, options }),
+    });
+    await readSSE(r.body, (event, data) => {
+      if (event === 'log')   log(data);
+      else if (event === 'error') { log(`\n✘ ${data.message}\n`); setStatus('변환 실패'); }
+      else if (event === 'done')  cvShowResult(data);
+    });
+  } catch (err) {
+    log(`✘ ${err.message}\n`); setStatus('변환 실패');
+  }
+  btn.disabled = false; btn.textContent = '🎬 WebP 움짤로 변환';
+}
+
+function cvShowResult({ info, webp }) {
+  const url = URL.createObjectURL(b64ToBlob(webp, 'image/webp'));
+  $('#cvResultThumb').src = url;
+  const base = ($('#cvFilename').textContent || 'output').replace(/\.[^.]+$/, '');
+  const dl = $('#cvDownloadLink');
+  dl.href = url; dl.download = `${base}_animated.webp`; dl.hidden = false;
+  $('#cvROut').textContent    = `${info.width}×${info.height}`;
+  $('#cvRFrames').textContent = `${info.pages}프레임 · ${info.fps}fps`;
+  $('#cvRSize').textContent   = fmtBytes(info.size);
+  $('#cvResultCard').hidden = false;
+  setStatus(`완료 ♡ ${fmtBytes(info.size)} 저장 준비됨`);
+}
+
+/* ════════ 장난 버튼 ════════ */
 document.querySelector('.tbtn-x').addEventListener('click', () => {
   log(`\n(｡>﹏<｡) 닫지 마세요... 아직 할 일이 남았어요...\n`);
 });
