@@ -31,9 +31,11 @@
 
 *{box-sizing:border-box;}
 [hidden]{display:none !important;}
-html,body{height:100%;}
+/* height:100% 대신 min-height → 콘텐츠가 뷰포트보다 길면 스크롤 활성화 */
+html{min-height:100%;}
 body{
   margin:0;
+  min-height:100vh;
   font-family:'Galmuri11','MS Gothic','Apple SD Gothic Neo',monospace;
   font-size:13px;
   color:var(--ink);
@@ -41,8 +43,9 @@ body{
     radial-gradient(circle at 20% 15%, #ffc8ec 0, transparent 45%),
     radial-gradient(circle at 85% 80%, #d9c0ff 0, transparent 45%),
     repeating-linear-gradient(45deg,#f9c9ec 0 14px,#f4c0e8 14px 28px);
+  background-attachment:fixed; /* 스크롤해도 배경 고정 */
   display:flex;align-items:center;justify-content:center;
-  padding:16px;
+  padding:8px 16px; /* 위아래 여백 최소화 */
   -webkit-font-smoothing:none;
   image-rendering:pixelated;
 }
@@ -60,6 +63,9 @@ body{
   border:3px solid;
   border-color:var(--bevel-lt) var(--bevel-dk2) var(--bevel-dk2) var(--bevel-lt);
   box-shadow:0 0 0 1px var(--magenta-d), 6px 6px 0 rgba(150,40,120,.35), 0 0 40px rgba(255,80,200,.5);
+  /* 뷰포트를 거의 꽉 채우도록 — 패딩(8px×2=16px) 뺀 높이 */
+  min-height:calc(100vh - 16px);
+  display:flex; flex-direction:column;
 }
 
 /* ── 타이틀바 ── */
@@ -102,14 +108,16 @@ body{
 .menu-hint{font-size:11px;color:var(--magenta-d);}
 
 /* ── 본문 레이아웃 ── */
-.body{display:flex;gap:10px;padding:10px;}
+/* 탭 패널이 window의 남은 공간을 모두 채움 */
+#paneEdit, #paneConvert{flex:1; display:flex; flex-direction:column; min-height:0;}
+.body{flex:1; display:flex;gap:10px;padding:10px; min-height:0;}
 .panel{
   background:var(--pink-0);
   border:2px solid;border-color:var(--bevel-dk2) var(--bevel-lt) var(--bevel-lt) var(--bevel-dk2);
   padding:8px;
 }
 .preview-panel{flex:1.4;min-width:0;display:flex;flex-direction:column;}
-.control-panel{flex:1;min-width:270px;display:flex;flex-direction:column;gap:8px;}
+.control-panel{flex:1;min-width:270px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
 .panel-title{
   background:linear-gradient(90deg,var(--magenta),var(--pink-3));
   color:#fff;text-shadow:1px 1px 0 var(--magenta-d);
@@ -119,9 +127,9 @@ body{
 .filename{font-size:10px;font-weight:normal;opacity:.95;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 /* ── 스테이지(프리뷰) ── */
-.stage-wrap{flex:1;display:flex;}
+.stage-wrap{flex:1;display:flex;min-height:0;}
 .stage{
-  position:relative;flex:1;min-height:300px;
+  position:relative;flex:1;min-height:200px;
   background:
     conic-gradient(#f4d4ee 0 25%, #ffe9f8 0 50%, #f4d4ee 0 75%, #ffe9f8 0) 0 0/22px 22px;
   border:2px solid;border-color:var(--bevel-dk2) var(--bevel-lt) var(--bevel-lt) var(--bevel-dk2);
