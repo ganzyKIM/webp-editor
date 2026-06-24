@@ -282,12 +282,40 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
 /* ════════════════════════════════════════════════════════════════════
    마스코트 (쵸텐 ⟷ 아메)
    ════════════════════════════════════════════════════════════════════ */
+/* 강림/승천 소환 버튼 */
+.mascot-summon{
+  font-family:inherit; font-size:11px; color:var(--ink); cursor:pointer;
+  padding:3px 10px; letter-spacing:1px; font-weight:bold; white-space:nowrap;
+  background:linear-gradient(var(--pink-1),var(--pink-2));
+  border:2px solid; border-color:var(--bevel-lt) var(--bevel-dk2) var(--bevel-dk2) var(--bevel-lt);
+}
+.mascot-summon:hover{ background:linear-gradient(var(--pink-2),var(--pink-3)); }
+.mascot-summon:active{ border-color:var(--bevel-dk2) var(--bevel-lt) var(--bevel-lt) var(--bevel-dk2); transform:translateY(1px); }
+/* 승천 상태: 눌러서 사라지는 느낌 — 살짝 어둡게 */
+.mascot-summon.is-summoned{
+  background:linear-gradient(var(--lav-2),var(--lav-1));
+  color:var(--ink);
+}
+
 .mascot{
   position:fixed; right:18px; bottom:8px; z-index:200;
   display:flex; align-items:flex-end; justify-content:center;
   user-select:none; touch-action:none;
   filter:drop-shadow(0 6px 10px rgba(120,30,90,.35));
 }
+.mascot.mascot-hidden{ display:none; }
+.mascot.descending{ animation:mascotDescend .65s cubic-bezier(.34,1.1,.64,1) both; }
+.mascot.ascending { animation:mascotAscend  .45s ease-in forwards; }
+@keyframes mascotDescend{
+  0%  { opacity:0; transform:translateY(-60px) scale(.85); filter:brightness(2.5); }
+  60% { opacity:1; transform:translateY(6px)   scale(1.02); filter:brightness(1.1); }
+  100%{ opacity:1; transform:translateY(0)     scale(1);    filter:brightness(1); }
+}
+@keyframes mascotAscend{
+  0%  { opacity:1; transform:translateY(0)     scale(1); }
+  100%{ opacity:0; transform:translateY(-50px) scale(.85); filter:brightness(2); }
+}
+
 .mascot.dragging{cursor:grabbing; filter:drop-shadow(0 12px 18px rgba(120,30,90,.5));}
 
 .mascot-stack{position:relative; display:flex; align-items:flex-end; justify-content:center;}
@@ -621,6 +649,16 @@ body.mode-ame .cv-upload-progress {
   background: var(--lav-1);
   border-color: var(--lav-2);
   color: var(--ink);
+}
+
+/* ── 강림 버튼 다크모드 ── */
+body.mode-ame .mascot-summon {
+  background: linear-gradient(#1e1228, #251630);
+  color: #ecd8f8;
+}
+body.mode-ame .mascot-summon:hover { background: linear-gradient(#251630, #2e1a38); }
+body.mode-ame .mascot-summon.is-summoned {
+  background: linear-gradient(#2a1e3e, #1e1530);
 }
 
 /* ── 마스코트: 아메 폼에서 변신 버튼도 어둡게 ── */

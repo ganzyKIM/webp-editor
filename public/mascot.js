@@ -49,18 +49,21 @@
   };
 
   /* ── DOM ─────────────────────────────────────────────────────────── */
-  const root      = document.getElementById('mascot');
+  const root       = document.getElementById('mascot');
   if (!root) return;
-  const img       = document.getElementById('mascotImg');
-  const bubble    = document.getElementById('mascotBubble');
-  const fallback  = document.getElementById('mascotFallback');
-  const btn       = document.getElementById('mascotTransform');
+  const img        = document.getElementById('mascotImg');
+  const bubble     = document.getElementById('mascotBubble');
+  const fallback   = document.getElementById('mascotFallback');
+  const btn        = document.getElementById('mascotTransform');
+  const summonBtn  = document.getElementById('summonBtn');
 
   let form = DEFAULT_FORM;
   let bubbleTimer = null;
   let loadingTimer = null;
   let idleTimer = null;
-  let busy = false; // 변신/로딩 중엔 일반 대사 억제 정도만
+  let busy = false;
+  let summoned = false;
+  let firstSummon = true;
 
   /* ── 대사 출력 ───────────────────────────────────────────────────── */
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -180,18 +183,57 @@
 
   btn.addEventListener('click', (e) => { e.stopPropagation(); transform(); bumpIdle(); });
 
+  /* ── 강림 / 승천 ─────────────────────────────────────────────────── */
+  function summon() {
+    if (summoned) return;
+    summoned = true;
+    root.classList.remove('mascot-hidden', 'ascending');
+    root.classList.add('descending');
+    setTimeout(() => root.classList.remove('descending'), 700);
+    if (btn) btn.hidden = false;
+    if (summonBtn) {
+      summonBtn.textContent = '†승천†';
+      summonBtn.classList.add('is-summoned');
+    }
+    if (firstSummon) {
+      firstSummon = false;
+      setTimeout(() => event('greet'), 500);
+      bumpIdle();
+    }
+  }
+
+  function banish() {
+    if (!summoned) return;
+    summoned = false;
+    root.classList.remove('descending');
+    root.classList.add('ascending');
+    setTimeout(() => {
+      root.classList.add('mascot-hidden');
+      root.classList.remove('ascending');
+      bubble.hidden = true;
+    }, 480); // ascending 애니메이션(0.45s)보다 약간 길게
+    if (btn) btn.hidden = true;
+    if (summonBtn) {
+      summonBtn.textContent = '†강림†';
+      summonBtn.classList.remove('is-summoned');
+    }
+    clearTimeout(idleTimer);
+  }
+
+  if (summonBtn) {
+    summonBtn.addEventListener('click', () => summoned ? banish() : summon());
+  }
+
   /* ── 공개 API ────────────────────────────────────────────────────── */
   window.Mascot = {
-    say, event, startLoading, stopLoading, transform, setForm,
+    say, event, startLoading, stopLoading, transform, setForm, summon, banish,
     greet: () => event('greet'),
-    work:  () => event('work'),
-    done:  () => { stopLoading(); event('done'); },
-    fail:  () => { stopLoading(); event('error'); },
+    work:  () => { if (summoned) event('work'); },
+    done:  () => { stopLoading(); if (summoned) event('done'); },
+    fail:  () => { stopLoading(); if (summoned) event('error'); },
   };
 
-  /* ── 초기 등장 ───────────────────────────────────────────────────── */
+  /* ── 초기화 (강림 전까지 숨김) ──────────────────────────────────── */
   setForm(DEFAULT_FORM);
-  setTimeout(() => event('greet'), 700);
-  bumpIdle();
 
 })();

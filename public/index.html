@@ -25,7 +25,8 @@
       <button class="tab active" data-tab="edit">★ 움짤 편집</button>
       <button class="tab" data-tab="convert">🎬 영상→움짤</button>
       <span class="menu-spacer"></span>
-      <button id="mascotTransform" class="mascot-transform" title="변신!">✧ 변신 ✧</button>
+      <button id="summonBtn" class="mascot-summon">†강림†</button>
+      <button id="mascotTransform" class="mascot-transform" hidden title="변신!">✧ 변신 ✧</button>
       <span class="menu-hint" id="menuHint">♡ drag 해서 크롭 영역을 그려보아요 ♡</span>
     </div>
 
@@ -270,7 +271,7 @@
 </div>
 
 <!-- ── 마스코트 (쵸텐 ⟷ 아메) ───────────────────────────── -->
-<div id="mascot" class="mascot form-kangel" data-form="kangel">
+<div id="mascot" class="mascot form-kangel mascot-hidden" data-form="kangel">
   <div id="mascotBubble" class="mascot-bubble" hidden></div>
   <div class="mascot-stack">
     <div class="mascot-fx" aria-hidden="true">
