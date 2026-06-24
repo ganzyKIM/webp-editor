@@ -357,12 +357,12 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
 .mascot-bubble{
   position:absolute; bottom:calc(100% + 12px); left:50%;
   transform:translateX(-50%);
-  max-width:230px; min-width:90px;
+  width:220px;
   background:#fff; color:var(--ink);
   border:2px solid var(--magenta); border-radius:14px;
   padding:9px 13px; font-size:12px; line-height:1.45; text-align:center;
   box-shadow:3px 3px 0 rgba(180,40,140,.3);
-  word-break:keep-all; white-space:nowrap;
+  word-break:keep-all; word-wrap:break-word; white-space:normal;
   z-index:10;
 }
 .mascot-bubble::after{ /* 꼬리 */
