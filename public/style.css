@@ -310,19 +310,19 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
 }
 .mascot-fallback small{font-size:10px; color:var(--ink-soft);}
 
-/* 변신 버튼 */
+/* 변신 버튼 — 메뉴바 우측 배치 */
 .mascot-transform{
-  font-family:inherit; font-size:13px; color:#fff; cursor:pointer;
-  padding:6px 16px; letter-spacing:1px; font-weight:bold;
+  font-family:inherit; font-size:11px; color:#fff; cursor:pointer;
+  padding:3px 12px; letter-spacing:1px; font-weight:bold; white-space:nowrap;
   text-shadow:1px 1px 0 var(--magenta-d);
   background:linear-gradient(var(--lav-2),var(--magenta));
   border:2px solid; border-color:var(--bevel-lt) var(--bevel-dk2) var(--bevel-dk2) var(--bevel-lt);
-  box-shadow:0 0 10px rgba(255,80,200,.6);
+  box-shadow:0 0 8px rgba(255,80,200,.5);
   animation:transformGlow 1.8s ease-in-out infinite;
 }
 .mascot-transform:hover{background:linear-gradient(var(--magenta),var(--magenta-d));}
-.mascot-transform:active{transform:translateY(1px);}
-@keyframes transformGlow{50%{box-shadow:0 0 18px rgba(255,80,200,.95);}}
+.mascot-transform:active{transform:translateY(1px); border-color:var(--bevel-dk2) var(--bevel-lt) var(--bevel-lt) var(--bevel-dk2);}
+@keyframes transformGlow{50%{box-shadow:0 0 14px rgba(255,80,200,.9);}}
 
 /* ── 말풍선 ── */
 .mascot-bubble{
