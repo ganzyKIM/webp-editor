@@ -42,6 +42,7 @@ async function uploadFile(file) {
     log(`\n✘ ${file.name} : webp 또는 gif 움짤만 올려주세요\n`); return;
   }
   setStatus('업로드 중...');
+  if (window.Mascot) Mascot.work();
   log(`\n> "${file.name}" 업로드 중... (${fmtBytes(file.size)})\n`);
   const fd = new FormData(); fd.append('file', file);
   try {
@@ -104,13 +105,22 @@ function onLoaded() {
 preview.addEventListener('load', syncCropLayer);
 window.addEventListener('resize', () => { syncCropLayer(); if (state.crop) syncCropInputsFromState(); });
 
+/* 레이아웃이 바뀌어도(예: 결과 카드가 떠서 스테이지 높이가 변할 때)
+   크롭 오버레이가 이미지에 계속 들러붙도록 stage/preview 크기를 관찰 */
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(() => { if (!preview.hidden) syncCropLayer(); });
+  ro.observe(stage);
+  ro.observe(preview);
+}
+
 /* cropLayer를 표시된 이미지 영역에 정확히 맞춘다 */
 function syncCropLayer() {
   if (preview.hidden) return;
   const ir = preview.getBoundingClientRect();
   const sr = stage.getBoundingClientRect();
-  cropLayer.style.left   = (ir.left - sr.left) + 'px';
-  cropLayer.style.top    = (ir.top  - sr.top)  + 'px';
+  // absolute left/top 은 stage 의 패딩박스 기준 → 테두리(clientLeft/Top)만큼 보정
+  cropLayer.style.left   = (ir.left - sr.left - stage.clientLeft) + 'px';
+  cropLayer.style.top    = (ir.top  - sr.top  - stage.clientTop)  + 'px';
   cropLayer.style.width  = ir.width  + 'px';
   cropLayer.style.height = ir.height + 'px';
   if (state.crop) drawCropBox();
@@ -344,6 +354,7 @@ async function doExport() {
   const btn = $('#exportBtn'); btn.disabled = true; btn.textContent = '⏳ 변환 중...';
   $('#downloadLink').hidden = true; $('#resultCard').hidden = true;
   setStatus('변환 중... ♨');
+  if (window.Mascot) Mascot.startLoading();
 
   const options = {
     quality: +$('#quality').value,
@@ -371,7 +382,7 @@ async function doExport() {
 
 function onSSE(event, data) {
   if (event === 'log')   log(data);
-  else if (event === 'error') { log(`\n✘ 에러: ${data.message}\n`); setStatus('변환 실패 (；´д｀)'); }
+  else if (event === 'error') { log(`\n✘ 에러: ${data.message}\n`); setStatus('변환 실패 (；´д｀)'); if (window.Mascot) Mascot.fail(); }
   else if (event === 'done')  showResult(data);
 }
 
@@ -387,6 +398,7 @@ function showResult({ info, webp }) {
   $('#rRatio').textContent  = info.ratio != null ? `${info.ratio}%` : '—';
   $('#resultCard').hidden = false;
   setStatus(`완료 ♡ ${fmtBytes(info.size)} 저장 준비됨`);
+  if (window.Mascot) Mascot.done();
 }
 
 /* SSE 파싱 */
@@ -456,6 +468,7 @@ async function cvHandleFile(file) {
   cvEmpty.hidden = true;
   $('#cvFilename').textContent = file.name;
   setStatus('업로드 중...');
+  if (window.Mascot) Mascot.work();
   log(`\n> "${file.name}" 업로드 중... (${fmtBytes(file.size)})\n`);
 
   try {
@@ -571,6 +584,7 @@ async function cvDoConvert() {
   $('#cvDownloadLink').hidden = true;
   $('#cvResultCard').hidden = true;
   setStatus('변환 중... ♨');
+  if (window.Mascot) Mascot.startLoading();
 
   const options = {
     start:    parseFloat($('#cvStart').value) || 0,
@@ -590,11 +604,11 @@ async function cvDoConvert() {
     });
     await readSSE(r.body, (event, data) => {
       if (event === 'log')   log(data);
-      else if (event === 'error') { log(`\n✘ ${data.message}\n`); setStatus('변환 실패'); }
+      else if (event === 'error') { log(`\n✘ ${data.message}\n`); setStatus('변환 실패'); if (window.Mascot) Mascot.fail(); }
       else if (event === 'done')  cvShowResult(data);
     });
   } catch (err) {
-    log(`✘ ${err.message}\n`); setStatus('변환 실패');
+    log(`✘ ${err.message}\n`); setStatus('변환 실패'); if (window.Mascot) Mascot.fail();
   }
   btn.disabled = false; btn.textContent = '🎬 WebP 움짤로 변환';
 }
@@ -610,6 +624,7 @@ function cvShowResult({ info, webp }) {
   $('#cvRSize').textContent   = fmtBytes(info.size);
   $('#cvResultCard').hidden = false;
   setStatus(`완료 ♡ ${fmtBytes(info.size)} 저장 준비됨`);
+  if (window.Mascot) Mascot.done();
 }
 
 /* ════════ 장난 버튼 ════════ */
