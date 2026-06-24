@@ -126,6 +126,8 @@
     root.classList.add(FORMS[name].cls);
     img.src = FORMS[name].img;
     if (fallback) fallback.textContent = FORMS[name].name + ' (이미지 없음)';
+    // 아메 폼이면 UI 전체 다크모드
+    document.body.classList.toggle('mode-ame', name === 'ame');
   }
 
   /* ── 이미지 폴백 ─────────────────────────────────────────────────── */

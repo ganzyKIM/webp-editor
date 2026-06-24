@@ -408,3 +408,197 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
   .body{flex-direction:column;}.control-panel{min-width:0;}
   .mascot{transform:scale(.7); transform-origin:bottom right;}
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   아메 다크 모드  (body.mode-ame 일 때 전체 UI가 어두워짐)
+   컨셉: 색이 빠진 밤, 텅 빈 방, 오직 아메와 P만
+   ════════════════════════════════════════════════════════════════════ */
+
+/* 다크모드 전환 트랜지션
+   · background는 CSS 변수 경유 시 transition이 브라우저에서 불안정 → 제거
+   · 어차피 변신 플래시(fx-flash)가 배경 전환 순간을 완전히 가려줌
+   · color/border/shadow는 부드럽게 */
+body,
+.window, .titlebar, .menubar, .statusbar,
+.panel, .ctl-group, .tab, .result-card,
+.console, .console-title, .console-wrap,
+.stage, .btn, .seg-btn, .mascot-fallback,
+.mascot-bubble, .mascot-transform {
+  transition:
+    color          0.55s ease,
+    border-color   0.55s ease,
+    box-shadow     0.65s ease,
+    text-shadow    0.55s ease,
+    filter         0.65s ease;
+}
+
+/* ── 팔레트 재정의 ── */
+body.mode-ame {
+  --pink-0:   #160d1e;
+  --pink-1:   #1e1228;
+  --pink-2:   #251630;
+  --pink-3:   #2e1a38;
+  --magenta:  #7a2d60;
+  --magenta-d:#4a1538;
+  --lav-1:    #1e1530;
+  --lav-2:    #2a1e3e;
+  --mint:     #0f1e28;
+  --ink:      #c4a8d4;
+  --ink-soft: #6a4a7a;
+  --bevel-lt: #3a2050;
+  --bevel-dk: #08030c;
+  --bevel-dk2:#060209;
+  --face:     #201230;
+  --win-bg:   #180c22;
+}
+
+/* CSS variable → transition은 브라우저 지원이 불안정하므로 직접 재정의 */
+body.mode-ame .window       { background: #180c22; color: #c4a8d4; }
+body.mode-ame .panel        { background: #160d1e; }
+body.mode-ame .ctl-group    { background: #1e1228; }
+body.mode-ame .menubar      { background: #160d20; }
+body.mode-ame .statusbar    { background: #160d20; }
+body.mode-ame .tab          { background: #201230; color: #c4a8d4; }
+body.mode-ame .tab.active   { background: linear-gradient(#251630, #1e1228); }
+body.mode-ame .btn          { background: linear-gradient(#1e1228, #251630); color: #c4a8d4; }
+body.mode-ame .btn:hover    { background: linear-gradient(#251630, #2e1a38); }
+body.mode-ame .seg-btn      { background: #201230; color: #c4a8d4; }
+body.mode-ame .num          { background: #120810; color: #c4a8d4; }
+
+/* ── 배경 ── */
+body.mode-ame {
+  background:
+    radial-gradient(circle at 20% 15%, #1a0828 0, transparent 45%),
+    radial-gradient(circle at 85% 80%, #0d0818 0, transparent 45%),
+    repeating-linear-gradient(45deg, #110818 0 14px, #0e0615 14px 28px);
+}
+
+/* ── 윈도우 글로우 ── */
+body.mode-ame .window {
+  box-shadow: 0 0 0 1px #4a1538, 6px 6px 0 rgba(30,10,50,.7), 0 0 40px rgba(100,20,80,.4);
+}
+
+/* ── 타이틀바 ── */
+body.mode-ame .titlebar {
+  background: linear-gradient(90deg, #3a0d28 0%, #2a0820 60%, #1e0d30 100%);
+  text-shadow: 1px 1px 0 #08030c;
+}
+body.mode-ame .tbtn-x { background: #4a1535; }
+
+/* ── 스테이지 체크패턴 ── */
+body.mode-ame .stage {
+  background:
+    conic-gradient(#140820 0 25%, #1a0d28 0 50%, #140820 0 75%, #1a0d28 0)
+    0 0/22px 22px;
+}
+
+/* ── 패널 타이틀 ── */
+body.mode-ame .panel-title {
+  background: linear-gradient(90deg, #3a0d28, #2a1035);
+  text-shadow: 1px 1px 0 #08030c;
+}
+
+/* ── 버튼들 ── */
+body.mode-ame .btn-load {
+  background: linear-gradient(var(--lav-1), var(--lav-2));
+}
+body.mode-ame .btn-export {
+  background: linear-gradient(#5a1a40, #30081e);
+  animation: pulseAme 1.6s ease-in-out infinite;
+}
+body.mode-ame .btn-export:disabled { animation: none; }
+@keyframes pulseAme { 50% { box-shadow: 0 0 16px rgba(120,40,90,.9); } }
+
+body.mode-ame .btn-download {
+  background: linear-gradient(#1a2838, #0f1e2a);
+  color: #6aaabe;
+}
+
+/* ── 세그먼트 active ── */
+body.mode-ame .seg-btn.active {
+  background: linear-gradient(#5a1a40, #3a0d28);
+}
+
+/* ── 탭 active ── */
+body.mode-ame .tab.active {
+  background: linear-gradient(#251630, #1e1228);
+}
+
+/* ── 숫자 입력 / 체크박스 ── */
+body.mode-ame .num {
+  background: #120810;
+  color: var(--ink);
+  border-color: var(--bevel-dk2) var(--bevel-lt) var(--bevel-lt) var(--bevel-dk2);
+}
+body.mode-ame .check input { accent-color: var(--magenta); }
+
+/* ── 슬라이더 ── */
+body.mode-ame input[type=range] {
+  background: #120810;
+  border-color: var(--bevel-dk2) var(--bevel-lt) var(--bevel-lt) var(--bevel-dk2);
+}
+body.mode-ame input[type=range]::-webkit-slider-thumb {
+  background: linear-gradient(var(--pink-2), var(--magenta));
+}
+
+/* ── ffmpeg 콘솔 ── */
+body.mode-ame .console-title {
+  background: #1a1030;
+  color: #7a5a8a;
+}
+body.mode-ame .console {
+  background: #08030f;
+  color: #9a7ab0;
+  text-shadow: 0 0 4px rgba(150,80,180,.4);
+}
+
+/* ── 결과 카드 ── */
+body.mode-ame .result-card {
+  background: #0f1820;
+  border-color: var(--bevel-lt) #182535 #182535 var(--bevel-lt);
+}
+body.mode-ame .rc-title { color: #5a8aaa; }
+body.mode-ame .rc-title .heart { color: var(--magenta); }
+body.mode-ame .rc-grid b { color: #4a7090; }
+body.mode-ame .result-thumb {
+  background:
+    conic-gradient(#0f1a22 0 25%, #162230 0 50%, #0f1a22 0 75%, #162230 0)
+    0 0/14px 14px;
+  border-color: #1a3040 var(--bevel-lt) var(--bevel-lt) #1a3040;
+}
+
+/* ── 상태바 ── */
+body.mode-ame .statusbar { color: #4a2a5a; }
+
+/* ── cv-estimate 등 소형 알림 ── */
+body.mode-ame .cv-estimate {
+  background: var(--pink-1);
+  border-color: var(--pink-3);
+  color: var(--ink-soft);
+}
+body.mode-ame .cv-upload-progress {
+  background: var(--lav-1);
+  border-color: var(--lav-2);
+  color: var(--ink);
+}
+
+/* ── 마스코트: 아메 폼에서 변신 버튼도 어둡게 ── */
+body.mode-ame .mascot-transform {
+  background: linear-gradient(#2a1040, #5a1a40);
+  box-shadow: 0 0 10px rgba(120,40,80,.6);
+  text-shadow: 1px 1px 0 #08030c;
+}
+@keyframes transformGlowAme { 50% { box-shadow: 0 0 18px rgba(120,40,80,.9); } }
+body.mode-ame .mascot-transform {
+  animation: transformGlowAme 1.8s ease-in-out infinite;
+}
+
+/* 변신 이펙트 링/스파크 색도 어둡게 */
+body.mode-ame .fx-ring { border-color: #7a2d60; }
+body.mode-ame .fx-ring2 { border-color: #3a1a50; }
+body.mode-ame .fx-spark.s1 { color: #7a2d60; }
+body.mode-ame .fx-spark.s2 { color: #4a1a70; }
+body.mode-ame .fx-spark.s3 { color: #5a1a40; }
+body.mode-ame .fx-spark.s4 { color: #1a3050; }
+body.mode-ame .fx-spark.s5 { color: #6a2050; }
+body.mode-ame .fx-spark.s6 { color: #4a1030; }
