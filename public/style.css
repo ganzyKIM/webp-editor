@@ -284,7 +284,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
    ════════════════════════════════════════════════════════════════════ */
 .mascot{
   position:fixed; right:18px; bottom:8px; z-index:200;
-  display:flex; flex-direction:column; align-items:center; gap:6px;
+  display:flex; align-items:flex-end; justify-content:center;
   user-select:none; touch-action:none;
   filter:drop-shadow(0 6px 10px rgba(120,30,90,.35));
 }
@@ -325,13 +325,17 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
 @keyframes transformGlow{50%{box-shadow:0 0 14px rgba(255,80,200,.9);}}
 
 /* ── 말풍선 ── */
+/* absolute로 빼서 캐릭터 위치에 영향 없게 */
 .mascot-bubble{
-  position:relative; max-width:230px; min-width:90px;
+  position:absolute; bottom:calc(100% + 12px); left:50%;
+  transform:translateX(-50%);
+  max-width:230px; min-width:90px;
   background:#fff; color:var(--ink);
   border:2px solid var(--magenta); border-radius:14px;
   padding:9px 13px; font-size:12px; line-height:1.45; text-align:center;
   box-shadow:3px 3px 0 rgba(180,40,140,.3);
-  word-break:keep-all;
+  word-break:keep-all; white-space:nowrap;
+  z-index:10;
 }
 .mascot-bubble::after{ /* 꼬리 */
   content:''; position:absolute; left:50%; bottom:-9px; transform:translateX(-50%);
@@ -341,8 +345,12 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
   content:''; position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
   border:7px solid transparent; border-top-color:#fff; border-bottom:0; z-index:1;
 }
+/* pop 애니메이션: translateX(-50%) 유지 + scale/Y 추가 */
 .mascot-bubble.pop{animation:bubblePop .28s cubic-bezier(.34,1.56,.64,1);}
-@keyframes bubblePop{0%{transform:scale(.6) translateY(8px); opacity:0;}100%{transform:scale(1) translateY(0); opacity:1;}}
+@keyframes bubblePop{
+  0%  {transform:translateX(-50%) scale(.6) translateY(8px); opacity:0;}
+  100%{transform:translateX(-50%) scale(1)  translateY(0);   opacity:1;}
+}
 /* 아메 폼이면 말풍선 톤 어둡게 */
 .mascot.form-ame .mascot-bubble{border-color:#6a2a5a; color:#3a1530; background:#f3e6f0;}
 .mascot.form-ame .mascot-bubble::after{border-top-color:#6a2a5a;}
