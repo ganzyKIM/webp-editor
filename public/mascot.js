@@ -267,17 +267,22 @@
       dy: e.clientY - r.top,
       moved: false,
       sx: e.clientX, sy: e.clientY,
+      r,
     };
-    root.style.right = 'auto';
-    root.style.bottom = 'auto';
-    root.style.left = r.left + 'px';
-    root.style.top  = r.top + 'px';
     img.setPointerCapture(e.pointerId);
     root.classList.add('dragging');
   });
   img.addEventListener('pointermove', (e) => {
     if (!drag) return;
-    if (Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) > 4) drag.moved = true;
+    if (!drag.moved && Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) > 6) {
+      drag.moved = true;
+      // 실제 드래그가 시작될 때만 right/bottom → left/top 전환
+      root.style.right = 'auto';
+      root.style.bottom = 'auto';
+      root.style.left = drag.r.left + 'px';
+      root.style.top  = drag.r.top  + 'px';
+    }
+    if (!drag.moved) return;
     let x = e.clientX - drag.dx;
     let y = e.clientY - drag.dy;
     const w = root.offsetWidth, h = root.offsetHeight;
