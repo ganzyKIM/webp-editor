@@ -271,6 +271,24 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
 .soon-list{font-size:11px;color:var(--ink-soft);background:var(--pink-1);padding:8px;
   border:2px solid;border-color:var(--bevel-dk2) var(--bevel-lt) var(--bevel-lt) var(--bevel-dk2);}
 
+/* ── 스테이지 로딩 오버레이 ── */
+.stage-loading{
+  position:absolute; inset:0; z-index:8;
+  background:rgba(255,230,247,.9);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+}
+/* 영상탭: 영상이 보이도록 반투명 */
+.stage-loading.stage-loading-overlay{ background:rgba(255,230,247,.65); }
+.stage-loading-icon{
+  font-size:30px; color:var(--magenta); display:block;
+  animation:spinStar 1.2s linear infinite;
+}
+@keyframes spinStar{ to{transform:rotate(360deg);} }
+.stage-loading-text{
+  font-size:12px; color:var(--magenta-d); letter-spacing:1px;
+  animation:blink .7s steps(1) infinite;
+}
+
 /* ── 영상→움짤 탭 ── */
 .cv-preview{
   max-width:100%;max-height:380px;display:block;

@@ -43,6 +43,9 @@ async function uploadFile(file) {
   }
   setStatus('업로드 중...');
   if (window.Mascot) Mascot.work();
+  emptyState.hidden = true;
+  preview.hidden = true;
+  $('#stageLoading').hidden = false;
   log(`\n> "${file.name}" 업로드 중... (${fmtBytes(file.size)})\n`);
   const fd = new FormData(); fd.append('file', file);
   try {
@@ -52,6 +55,8 @@ async function uploadFile(file) {
     state.token = data.token; state.name = data.name; state.meta = data.meta;
     onLoaded();
   } catch (err) {
+    $('#stageLoading').hidden = true;
+    if (!state.token) emptyState.hidden = false;
     if (err instanceof TypeError) {
       log(`✘ 서버에 연결하지 못했어요 (Failed to fetch)\n` +
           `   · 브라우저 주소가 http://localhost:3939 인지 확인해 주세요\n` +
@@ -80,6 +85,7 @@ function onLoaded() {
   const m = state.meta;
   preview.src = `/api/preview/${state.token}?t=${Date.now()}`;
   preview.hidden = false; emptyState.hidden = true;
+  $('#stageLoading').hidden = true;
   $('#filename').textContent = state.name;
   log(`✔ 로드 완료 — ${m.width}×${m.height}, ${m.pages}프레임, ` +
       `${m.animated ? m.fps + 'fps' : '정지영상'}, ${fmtBytes(m.size)}\n`);
@@ -467,6 +473,7 @@ async function cvHandleFile(file) {
   cvPreview.hidden = false;
   cvEmpty.hidden = true;
   $('#cvFilename').textContent = file.name;
+  $('#cvStageLoading').hidden = false;
   setStatus('업로드 중...');
   if (window.Mascot) Mascot.work();
   log(`\n> "${file.name}" 업로드 중... (${fmtBytes(file.size)})\n`);
@@ -516,10 +523,12 @@ async function cvHandleFile(file) {
     setStatus('업로드 실패');
   } finally {
     cvState.uploading = false;
+    $('#cvStageLoading').hidden = true;
   }
 }
 
 function cvOnLoaded() {
+  $('#cvStageLoading').hidden = true;
   const m = cvState.meta;
   log(`✔ 영상 로드 완료 — ${m.width}×${m.height}, ${m.fps}fps, ${m.duration.toFixed(1)}s\n`);
 
