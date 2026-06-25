@@ -315,8 +315,9 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
 .mascot.descending{ animation:mascotDescend .55s cubic-bezier(.22,1,.36,1) both; }
 .mascot.ascending { animation:mascotAscend  .4s ease-in forwards; }
 @keyframes mascotDescend{
-  0%  { opacity:0; transform:translateY(-40px) scale(.92); }
-  100%{ opacity:1; transform:translateY(0)     scale(1); }
+  0%  { opacity:0; transform:translateY(-40px) scale(.92); filter:brightness(3); }
+  60% { opacity:1; transform:translateY(4px)   scale(1.01); filter:brightness(1.15); }
+  100%{ opacity:1; transform:translateY(0)     scale(1);    filter:brightness(1); }
 }
 @keyframes mascotAscend{
   0%  { opacity:1; transform:translateY(0)  scale(1); }
