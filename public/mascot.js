@@ -262,34 +262,37 @@
   img.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const r = root.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+    // right/bottom 좌표계로 고정 — left/top 전환 없이 항상 같은 기준으로 계산
+    const curRight  = vw - r.right;
+    const curBottom = vh - r.bottom;
+    root.style.left   = 'auto';
+    root.style.top    = 'auto';
+    root.style.right  = curRight  + 'px';
+    root.style.bottom = curBottom + 'px';
     drag = {
-      dx: e.clientX - r.left,
-      dy: e.clientY - r.top,
-      moved: false,
       sx: e.clientX, sy: e.clientY,
-      r,
+      startRight: curRight, startBottom: curBottom,
+      moved: false,
     };
     img.setPointerCapture(e.pointerId);
     root.classList.add('dragging');
   });
   img.addEventListener('pointermove', (e) => {
     if (!drag) return;
-    if (!drag.moved && Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) > 6) {
-      drag.moved = true;
-      // 실제 드래그가 시작될 때만 right/bottom → left/top 전환
-      root.style.right = 'auto';
-      root.style.bottom = 'auto';
-      root.style.left = drag.r.left + 'px';
-      root.style.top  = drag.r.top  + 'px';
-    }
+    const dx = e.clientX - drag.sx;
+    const dy = e.clientY - drag.sy;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true;
     if (!drag.moved) return;
-    let x = e.clientX - drag.dx;
-    let y = e.clientY - drag.dy;
     const w = root.offsetWidth, h = root.offsetHeight;
-    x = Math.max(-w * 0.5, Math.min(window.innerWidth  - w * 0.5, x));
-    y = Math.max(0,        Math.min(window.innerHeight - h * 0.4, y));
-    root.style.left = x + 'px';
-    root.style.top  = y + 'px';
+    const vw = window.innerWidth, vh = window.innerHeight;
+    // 오른쪽으로 이동 → right 감소, 아래로 이동 → bottom 감소
+    let nr = drag.startRight  - dx;
+    let nb = drag.startBottom - dy;
+    nr = Math.max(-(w * 0.5), Math.min(vw - w * 0.5, nr));
+    nb = Math.max(-(h * 0.6), Math.min(vh - h, nb));
+    root.style.right  = nr + 'px';
+    root.style.bottom = nb + 'px';
   });
   img.addEventListener('pointerup', (e) => {
     if (!drag) return;

@@ -311,7 +311,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:16px;background:var(--mage
   user-select:none; touch-action:none;
   filter:drop-shadow(0 6px 10px rgba(120,30,90,.35));
 }
-.mascot.mascot-hidden{ display:none; }
+.mascot.mascot-hidden{ opacity:0 !important; pointer-events:none; }
 .mascot.descending{ animation:mascotDescend .55s cubic-bezier(.22,1,.36,1) both; }
 .mascot.ascending { animation:mascotAscend  .4s ease-in forwards; }
 @keyframes mascotDescend{
