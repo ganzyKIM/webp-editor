@@ -10,10 +10,32 @@
 
   /* ── 캐릭터 폼 정의 ──────────────────────────────────────────────── */
   const FORMS = {
-    kangel: { img: 'char/kangel.png', name: '천사쨩', cls: 'form-kangel' },
-    ame:    { img: 'char/ame.png',    name: '아메',   cls: 'form-ame'    },
+    kangel: {
+      name: '천사쨩', cls: 'form-kangel',
+      imgs: {
+        default: 'char/choten_default.png',
+        dere:    'char/choten_dere.png',
+        angry:   'char/choten_angry.png',
+        peace:   'char/choten_peace.png',
+      },
+    },
+    ame: {
+      name: '아메', cls: 'form-ame',
+      imgs: {
+        default: 'char/ame_default.png',
+        dere:    'char/ame_dere.png',
+        smoking: 'char/ame_smoking.png',
+        yandere: 'char/ame_yandere.png',
+      },
+    },
   };
   const DEFAULT_FORM = 'kangel';
+
+  /* ── 이벤트 → 이미지 바리에이션 매핑 ────────────────────────────── */
+  const EVENT_IMG = {
+    kangel: { greet:'dere',    click:'dere',    work:'peace',   done:'peace',  error:'angry',   idle:'default', transform:'peace'   },
+    ame:    { greet:'dere',    click:'default', work:'smoking', done:'dere',   error:'yandere', idle:'smoking', transform:'default' },
+  };
 
   /* ── 대사 뱅크 ──────────────────────────────────────────────────── */
   const LINES = {
@@ -202,7 +224,14 @@
     bubbleTimer = setTimeout(() => { bubble.hidden = true; }, holdMs || 3200);
   }
 
+  function setImg(variant) {
+    const src = FORMS[form].imgs[variant] || FORMS[form].imgs.default;
+    if (img.src.includes(src.split('/').pop())) return;
+    img.src = src;
+  }
+
   function event(kind) {
+    setImg(EVENT_IMG[form]?.[kind] || 'default');
     const bank = LINES[form][kind] || LINES[form].click;
     say(pick(bank));
   }
@@ -210,6 +239,7 @@
   /* ── 로딩 대사 (수초 간격 반복) ──────────────────────────────────── */
   function startLoading() {
     busy = true;
+    setImg(EVENT_IMG[form]?.work || 'default');
     say(pick(LOADING), 3600);
     clearInterval(loadingTimer);
     loadingTimer = setInterval(() => say(pick(LOADING), 3600), 3400);
@@ -236,6 +266,7 @@
 
     setTimeout(() => {
       setForm(next);
+      setImg(EVENT_IMG[next]?.transform || 'default');
       say(TRANSFORM_LINE[next], 3400);
     }, 480);
 
@@ -248,7 +279,7 @@
     root.dataset.form = name;
     root.classList.remove(FORMS.kangel.cls, FORMS.ame.cls);
     root.classList.add(FORMS[name].cls);
-    img.src = FORMS[name].img;
+    img.src = FORMS[name].imgs.default;
     if (fallback) fallback.textContent = FORMS[name].name + ' (이미지 없음)';
     document.body.classList.toggle('mode-ame', name === 'ame');
   }
@@ -357,6 +388,10 @@
   };
 
   /* ── 초기화 (강림 전까지 숨김) ──────────────────────────────────── */
+  // 모든 캐릭터 바리에이션 이미지 프리로드 (첫 교체 시 깜빡임 방지)
+  Object.values(FORMS).forEach(f =>
+    Object.values(f.imgs).forEach(src => { const pi = new Image(); pi.src = src; })
+  );
   setForm(DEFAULT_FORM);
 
 })();
