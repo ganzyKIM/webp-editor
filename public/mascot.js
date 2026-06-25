@@ -210,9 +210,17 @@
   let idleTimer = null;
   let busy = false;
   let summoned = false;
+  let lastLine = null;
 
   /* ── 대사 출력 ───────────────────────────────────────────────────── */
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function pick(arr) {
+    if (arr.length === 1) return arr[0];
+    let item;
+    do { item = arr[Math.floor(Math.random() * arr.length)]; }
+    while (item === lastLine);
+    lastLine = item;
+    return item;
+  }
 
   function say(text, holdMs) {
     if (!text) return;
