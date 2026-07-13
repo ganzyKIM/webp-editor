@@ -317,17 +317,17 @@ $('#cropFull').addEventListener('click', () => {
 let scalePct = 100;
 function resetScale() {
   scalePct = 100;
-  document.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.pct === '100'));
+  document.querySelectorAll('#scaleSeg .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.pct === '100'));
   $('#targetW').value = '';
   updateOutDims();
 }
-document.querySelectorAll('.seg-btn').forEach(b =>
+document.querySelectorAll('#scaleSeg .seg-btn').forEach(b =>
   b.addEventListener('click', () => {
-    document.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('#scaleSeg .seg-btn').forEach(x => x.classList.remove('active'));
     b.classList.add('active'); scalePct = +b.dataset.pct; $('#targetW').value = ''; updateOutDims();
   }));
 $('#targetW').addEventListener('input', () => {
-  document.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('#scaleSeg .seg-btn').forEach(x => x.classList.remove('active'));
   updateOutDims();
 });
 
