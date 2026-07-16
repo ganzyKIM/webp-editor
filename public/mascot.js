@@ -304,7 +304,10 @@
   img.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const r = root.getBoundingClientRect();
-    const vw = window.innerWidth, vh = window.innerHeight;
+    // position:fixed 의 right/bottom 은 스크롤바를 제외한 뷰포트 기준이라
+    // window.innerWidth(스크롤바 포함) 를 쓰면 클릭할 때마다 스크롤바 폭만큼
+    // 밀리는 버그가 생긴다 — clientWidth/Height 로 기준을 맞춘다.
+    const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
     // right/bottom 좌표계로 고정 — left/top 전환 없이 항상 같은 기준으로 계산
     const curRight  = vw - r.right;
     const curBottom = vh - r.bottom;
@@ -324,10 +327,16 @@
     if (!drag) return;
     const dx = e.clientX - drag.sx;
     const dy = e.clientY - drag.sy;
-    if (!drag.moved && Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true;
-    if (!drag.moved) return;
+    if (!drag.moved) {
+      if (Math.abs(dx) + Math.abs(dy) <= 6) return;
+      // 임계값을 막 넘은 시점 — 여기서 기준점을 현재 위치로 재설정해서
+      // 클릭 시 손떨림만큼 캐릭터가 순간이동(점프)하는 걸 방지한다.
+      drag.moved = true;
+      drag.sx = e.clientX; drag.sy = e.clientY;
+      return;
+    }
     const w = root.offsetWidth, h = root.offsetHeight;
-    const vw = window.innerWidth, vh = window.innerHeight;
+    const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
     // 오른쪽으로 이동 → right 감소, 아래로 이동 → bottom 감소
     let nr = drag.startRight  - dx;
     let nb = drag.startBottom - dy;
