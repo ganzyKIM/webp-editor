@@ -8,7 +8,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "WebP 움짤 편집기 — 화질/해상도 조절 + 크롭 (sharp + ffmpeg)",
+  "description": "애니메이션 WebP 편집기와 영상 변환기 (sharp, ffmpeg)",
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
     "dotenv": "^17.4.2",
